@@ -166,6 +166,7 @@ const (
 func (a *AddrManager) updateAddress(netAddr, srcAddr *wire.NetAddress) {
 	// Filter out non-routable addresses. Note that non-routable
 	// also includes invalid and local addresses.
+	// 这个方法真的好强大. 非法地址验证
 	if !IsRoutable(netAddr) {
 		return
 	}

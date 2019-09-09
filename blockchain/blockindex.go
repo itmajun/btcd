@@ -108,7 +108,7 @@ type blockNode struct {
 func initBlockNode(node *blockNode, blockHeader *wire.BlockHeader, parent *blockNode) {
 	*node = blockNode{
 		hash:       blockHeader.BlockHash(),
-		workSum:    CalcWork(blockHeader.Bits),
+		workSum:    CalcWork(blockHeader.Bits), // 通过bits 计算难度
 		version:    blockHeader.Version,
 		bits:       blockHeader.Bits,
 		nonce:      blockHeader.Nonce,
@@ -241,7 +241,7 @@ func newBlockIndex(db database.DB, chainParams *chaincfg.Params) *blockIndex {
 	return &blockIndex{
 		db:          db,
 		chainParams: chainParams,
-		index:       make(map[chainhash.Hash]*blockNode),
+		index:       make(map[chainhash.Hash]*blockNode), // blockNode区块节点
 		dirty:       make(map[*blockNode]struct{}),
 	}
 }

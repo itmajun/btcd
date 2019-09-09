@@ -57,6 +57,7 @@ var genesisCoinbaseTx = wire.MsgTx{
 
 // genesisHash is the hash of the first block in the block chain for the main
 // network (genesis block).
+// 奇怪, 区块浏览器中是按照小端进行展示的, 这里的数据倒着就是浏览器中展示的数据?
 var genesisHash = chainhash.Hash([chainhash.HashSize]byte{ // Make go vet happy.
 	0x6f, 0xe2, 0x8c, 0x0a, 0xb6, 0xf1, 0xb3, 0x72,
 	0xc1, 0xa6, 0xa2, 0x46, 0xae, 0x63, 0xf7, 0x4f,
@@ -66,6 +67,7 @@ var genesisHash = chainhash.Hash([chainhash.HashSize]byte{ // Make go vet happy.
 
 // genesisMerkleRoot is the hash of the first transaction in the genesis block
 // for the main network.
+// 为啥区块浏览器中是按照小端展示?
 var genesisMerkleRoot = chainhash.Hash([chainhash.HashSize]byte{ // Make go vet happy.
 	0x3b, 0xa3, 0xed, 0xfd, 0x7a, 0x7b, 0x12, 0xb2,
 	0x7a, 0xc7, 0x2c, 0x3e, 0x67, 0x76, 0x8f, 0x61,
@@ -75,6 +77,14 @@ var genesisMerkleRoot = chainhash.Hash([chainhash.HashSize]byte{ // Make go vet 
 
 // genesisBlock defines the genesis block of the block chain which serves as the
 // public transaction ledger for the main network.
+// 创世块: https://btc.com/000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f
+// 通过区块浏览器, 我们可以查看创世块的内容:
+/**
+ 这里要说明下: 比特币中的hash.
+sha256. 会把所有数据hash成256位. 每4位合并成16位表示, 则最终形成了 比特币hash 64位的标识.
+我们发现btc所有块的hash 都是0000...开头的. 这里就涉及到挖矿, 所有信息打包之后, 还需要运算一个随机数, 这个随机数就是nonce.
+bits: 挖矿难度. 这里还涉及到了难度, 目标等, 在使用的地方再详细记录
+*/
 var genesisBlock = wire.MsgBlock{
 	Header: wire.BlockHeader{
 		Version:    1,

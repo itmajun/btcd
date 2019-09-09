@@ -1728,7 +1728,7 @@ func New(config *Config) (*BlockChain, error) {
 
 	// Generate a checkpoint by height map from the provided checkpoints
 	// and assert the provided checkpoints are sorted by height as required.
-	var checkpointsByHeight map[int32]*chaincfg.Checkpoint
+	var checkpointsByHeight map[int32]*chaincfg.Checkpoint // 区块检查. 高度,哈希 验证区块链数据.
 	var prevCheckpointHeight int32
 	if len(config.Checkpoints) > 0 {
 		checkpointsByHeight = make(map[int32]*chaincfg.Checkpoint)
@@ -1745,25 +1745,29 @@ func New(config *Config) (*BlockChain, error) {
 	}
 
 	params := config.ChainParams
-	targetTimespan := int64(params.TargetTimespan / time.Second)
-	targetTimePerBlock := int64(params.TargetTimePerBlock / time.Second)
-	adjustmentFactor := params.RetargetAdjustmentFactor
+	targetTimespan := int64(params.TargetTimespan / time.Second)         // 14天调整难度
+	targetTimePerBlock := int64(params.TargetTimePerBlock / time.Second) // 10分钟产生块 即 14天 2016个区块.
+	adjustmentFactor := params.RetargetAdjustmentFactor                  // 调整系数 25% ~400%
+	/**
+	btc 难度调整规则:
+	1. 如果两周超过2016个区块,则难度加大
+	*/
 	b := BlockChain{
-		checkpoints:         config.Checkpoints,
-		checkpointsByHeight: checkpointsByHeight,
-		db:                  config.DB,
-		chainParams:         params,
+		checkpoints:         config.Checkpoints,  // 数组
+		checkpointsByHeight: checkpointsByHeight, // map
+		db:                  config.DB,           // level db
+		chainParams:         params,              // config
 		timeSource:          config.TimeSource,
 		sigCache:            config.SigCache,
 		indexManager:        config.IndexManager,
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,
 		blocksPerRetarget:   int32(targetTimespan / targetTimePerBlock),
-		index:               newBlockIndex(config.DB, params),
+		index:               newBlockIndex(config.DB, params), // [Hash]的map.
 		hashCache:           config.HashCache,
-		bestChain:           newChainView(nil),
-		orphans:             make(map[chainhash.Hash]*orphanBlock),
-		prevOrphans:         make(map[chainhash.Hash][]*orphanBlock),
+		bestChain:           newChainView(nil),                       // 最新的区块 blockNode
+		orphans:             make(map[chainhash.Hash]*orphanBlock),   // 孤块,
+		prevOrphans:         make(map[chainhash.Hash][]*orphanBlock), // 上一个孤块
 		warningCaches:       newThresholdCaches(vbNumBits),
 		deploymentCaches:    newThresholdCaches(chaincfg.DefinedDeployments),
 	}

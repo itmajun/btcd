@@ -1004,9 +1004,14 @@ func dbPutBestState(dbTx database.Tx, snapshot *BestState, workSum *big.Int) err
 // the genesis block, so it must only be called on an uninitialized database.
 func (b *BlockChain) createChainState() error {
 	// Create a new node from the genesis block and set it as the best node.
+	// MsgBlock: [BlockHeader + MsgTx] 消息块
+	// Block: [msgBlock + Tx] 区块包括消息块和缓存信息
+
+	// 创建一个创世块, 把MsgBlock 封装成 Block. 高度未知
 	genesisBlock := btcutil.NewBlock(b.chainParams.GenesisBlock)
-	genesisBlock.SetHeight(0)
+	genesisBlock.SetHeight(0) // 高度 0
 	header := &genesisBlock.MsgBlock().Header
+	// 构建区块链[blockNode,包括一个又一个blockNode]
 	node := newBlockNode(header, nil)
 	node.status = statusDataStored | statusValid
 	b.bestChain.SetTip(node)
@@ -1105,8 +1110,11 @@ func (b *BlockChain) initChainState() error {
 	// Determine the state of the chain database. We may need to initialize
 	// everything from scratch or upgrade certain buckets.
 	var initialized, hasBlockIndex bool
+	// 查看数据库是否已经初始化了?
 	err := b.db.View(func(dbTx database.Tx) error {
+		//  key = chainstate
 		initialized = dbTx.Metadata().Get(chainStateKeyName) != nil
+		// key = blockheaderidx
 		hasBlockIndex = dbTx.Metadata().Bucket(blockIndexBucketName) != nil
 		return nil
 	})
@@ -1115,6 +1123,7 @@ func (b *BlockChain) initChainState() error {
 	}
 
 	if !initialized {
+		// 没有, 证明是一个新的环境, 重新创建创世块
 		// At this point the database has not already been initialized, so
 		// initialize both it and the chain state to the genesis block.
 		return b.createChainState()

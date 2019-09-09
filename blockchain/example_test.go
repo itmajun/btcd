@@ -31,6 +31,7 @@ func ExampleBlockChain_ProcessBlock() {
 	// around.
 	dbPath := filepath.Join(os.TempDir(), "exampleprocessblock")
 	_ = os.RemoveAll(dbPath)
+	// level db , 上面 import _ 导入了ffldb Driver
 	db, err := database.Create("ffldb", dbPath, chaincfg.MainNetParams.Net)
 	if err != nil {
 		fmt.Printf("Failed to create database: %v\n", err)
@@ -46,6 +47,7 @@ func ExampleBlockChain_ProcessBlock() {
 	// ordinarily keep a reference to the median time source and add time
 	// values obtained from other peers on the network so the local time is
 	// adjusted to be in agreement with other peers.
+	// 创建区块链: 区块链对象为 BlockChain 结构体
 	chain, err := blockchain.New(&blockchain.Config{
 		DB:          db,
 		ChainParams: &chaincfg.MainNetParams,
